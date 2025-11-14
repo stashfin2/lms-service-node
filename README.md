@@ -1,6 +1,6 @@
-# LMS Service
+# lms-service-node
 
-A Node.js TypeScript service that integrates with Fineract APIs using clean architecture principles.
+A Node.js TypeScript service that integrates with Fineract APIs using clean architecture principles. This is a wrapper to talk to Fineract LMS.
 
 ## Architecture
 
@@ -103,4 +103,3 @@ LMS-specific business logic is isolated in:
 ## License
 
 ISC
-
