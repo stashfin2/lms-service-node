@@ -1,7 +1,10 @@
 import 'reflect-metadata';
 import express, { Application } from 'express';
+import { container } from 'tsyringe';
 import { config } from './config';
 import routes from './routes';
+import { DirectoryDatabaseConnector } from './connector/sql';
+import { logger } from './utils/logger';
 
 class App {
   public app: Application;
@@ -10,6 +13,8 @@ class App {
   constructor() {
     this.app = express();
     this.port = config.port;
+    logger.info('Initializing LMS Service', { port: this.port, env: config.nodeEnv });
+    this.initializeDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes();
   }
@@ -23,8 +28,14 @@ class App {
     this.app.use('/api', routes);
   }
 
+  private initializeDatabase(): void {
+    // Force creation of the shared DB client as soon as the app boots
+    container.resolve(DirectoryDatabaseConnector);
+  }
+
   public listen(): void {
     this.app.listen(this.port, () => {
+      logger.info('LMS Service listening', { port: this.port });
       console.log(`🚀 LMS Service running on port ${this.port}`);
       console.log(`📊 Environment: ${config.nodeEnv}`);
     });
