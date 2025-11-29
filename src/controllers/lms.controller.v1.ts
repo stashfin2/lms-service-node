@@ -11,13 +11,15 @@ import {
 } from '../kafka/events';
 import { KafkaTopics } from '../config/kafka.config';
 import { logger } from '../utils/logger';
+import { formatToReadableDate } from '../utils/dateFormatter';
+import { IClientPayload } from '../schema/fineract.client.interface';
 
 @injectable()
 export class LmsControllerV1 {
   constructor(
     @inject(LmsServiceV1) private lmsService: LmsServiceV1,
     @inject(EventPublisher) private eventPublisher: EventPublisher
-  ) {}
+  ) { }
 
   /**
    * Create a new loan application
@@ -29,7 +31,7 @@ export class LmsControllerV1 {
 
       // Business logic - create loan application
       const applicationId = `LA-${Date.now()}`;
-      
+
       logger.info('Creating loan application', { applicationId, customerId });
 
       // Publish event to Kafka
@@ -198,25 +200,44 @@ export class LmsControllerV1 {
    */
   public createCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { firstName, lastName, email, phone, dateOfBirth, address } = req.body;
+      const { firstName, lastName, email, phone, dateOfBirth, address, customerId } = req.body;
 
-      const customerId = `CUST-${Date.now()}`;
-
-      logger.info('Creating customer', { customerId, email });
-
-      // Publish event to Kafka
+      logger.info('Initialized customer creation process:', { customerId, email });
+  
+      // Core payload
+      const payload: IClientPayload = {
+        officeId: 1,
+        legalFormId: 1,
+        isStaff: false,
+        active: true,
+        activationDate: formatToReadableDate(new Date()),
+        externalId: `${customerId}`,
+        mobileNo: phone,
+        emailAddress: email,
+        dateOfBirth: formatToReadableDate(new Date(dateOfBirth)),
+        submittedOnDate: formatToReadableDate(new Date()),
+        firstname: firstName,
+        lastname: lastName,
+        savingsProductId: 1,
+        familyMembers: [],
+        dateFormat: process.env.FINERACT_DATE_FORMAT || "dd MMMM yyyy",
+        locale: process.env.FINERACT_LOCALE || "en",
+      };
+  
+      // 👉 Add address only if present & valid
+      if (address && typeof address === "object" && Object.keys(address).length > 0) {
+        (payload as any).address = {
+          street: address.street,
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode,
+          country: address.country,
+        };
+      }
+  
+      // Create Kafka event
       const event = new CustomerCreatedEvent(
-        {
-          customerId,
-          firstName,
-          lastName,
-          email,
-          phone,
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          address,
-          status: 'ACTIVE',
-          createdAt: new Date(),
-        },
+        payload,
         {
           correlationId: req.headers['x-correlation-id'] as string,
           triggeredBy: 'system',

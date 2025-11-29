@@ -5,31 +5,15 @@
  */
 
 import { BaseEvent } from '../models/BaseEvent';
+import { IClientPayload } from '../../schema/fineract.client.interface';
 
 // ==================== Customer Events ====================
 
-export interface CustomerPayload {
-  customerId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  dateOfBirth?: Date;
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    pincode: string;
-    country: string;
-  };
-  status: string;
-  createdAt: Date;
-  metadata?: Record<string, any>;
-}
+export interface CustomerPayload extends IClientPayload {}
 
 export class CustomerCreatedEvent extends BaseEvent {
   constructor(
-    payload: CustomerPayload,
+    payload: IClientPayload,
     options?: {
       correlationId?: string;
       triggeredBy?: string;
@@ -43,7 +27,7 @@ export class CustomerCreatedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as CustomerPayload).customerId;
+    return (this.payload as CustomerPayload).externalId;
   }
 }
 
@@ -66,7 +50,7 @@ export class CustomerUpdatedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as CustomerPayload).customerId;
+    return (this.payload as CustomerPayload).externalId;
   }
 }
 
