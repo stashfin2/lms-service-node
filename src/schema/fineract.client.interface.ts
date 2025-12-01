@@ -26,6 +26,7 @@ export interface IClientPayload {
   familyMembers: any[];
   dateFormat: string;
   locale: string;
+  address?: IClientAddress;
 }
 
 export interface IClientSuccessResponse {
