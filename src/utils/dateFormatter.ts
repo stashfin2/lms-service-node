@@ -16,7 +16,8 @@ export function formatToReadableDate(input: any): string {
   
       // Detect DD-MM-YYYY format (example: "04-03-2025")
       else if (/^(\d{2})-(\d{2})-(\d{4})$/.test(input)) {
-        const [_, dd, mm, yyyy] = input.match(mmddyyyy)!;
+        const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})$/;
+        const [_, dd, mm, yyyy] = input.match(ddmmyyyy)!;
         date = new Date(`${yyyy}-${mm}-${dd}`);
       }
   

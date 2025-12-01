@@ -13,6 +13,7 @@ import { KafkaTopics } from '../config/kafka.config';
 import { logger } from '../utils/logger';
 import { formatToReadableDate } from '../utils/dateFormatter';
 import { IClientPayload } from '../schema/fineract.client.interface';
+import { FineractConstants } from '../config/fineract.constants';
 
 @injectable()
 export class LmsControllerV1 {
@@ -204,12 +205,12 @@ export class LmsControllerV1 {
 
       logger.info('Initialized customer creation process:', { customerId, email });
   
-      // Core payload
+      // Core payload with type-safe construction
       const payload: IClientPayload = {
-        officeId: 1,
-        legalFormId: 1,
-        isStaff: false,
-        active: true,
+        officeId: FineractConstants.DEFAULT_OFFICE_ID,
+        legalFormId: FineractConstants.LEGAL_FORM_PERSON,
+        isStaff: FineractConstants.CLIENT_DEFAULTS.IS_STAFF,
+        active: FineractConstants.CLIENT_DEFAULTS.ACTIVE_ON_CREATION,
         activationDate: formatToReadableDate(new Date()),
         externalId: `${customerId}`,
         mobileNo: phone,
@@ -218,15 +219,15 @@ export class LmsControllerV1 {
         submittedOnDate: formatToReadableDate(new Date()),
         firstname: firstName,
         lastname: lastName,
-        savingsProductId: 1,
+        savingsProductId: FineractConstants.DEFAULT_SAVINGS_PRODUCT_ID,
         familyMembers: [],
-        dateFormat: process.env.FINERACT_DATE_FORMAT || "dd MMMM yyyy",
-        locale: process.env.FINERACT_LOCALE || "en",
+        dateFormat: FineractConstants.DATE_FORMAT,
+        locale: FineractConstants.LOCALE,
       };
   
-      // 👉 Add address only if present & valid
+      // Add address only if present and valid (type-safe)
       if (address && typeof address === "object" && Object.keys(address).length > 0) {
-        (payload as any).address = {
+        payload.address = {
           street: address.street,
           city: address.city,
           state: address.state,
