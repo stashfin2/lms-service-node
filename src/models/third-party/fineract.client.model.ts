@@ -1,5 +1,6 @@
 
 import { IClientPayload, IClientSuccessResponse } from "../../schema/fineract.client.interface.js";
+import { logger } from "../../utils/logger";
 
 export class FineractCreateClientRequest {
   officeId!: number;
@@ -20,6 +21,8 @@ export class FineractCreateClientRequest {
   }>;
 
   constructor(payload: IClientPayload) {
+    this.validatePayload(payload);
+
     this.officeId = payload.officeId;
     this.firstname = payload.firstname;
     this.lastname = payload.lastname;
@@ -45,6 +48,49 @@ export class FineractCreateClientRequest {
         }
       }
     ];
+  }
+
+  private validatePayload(payload: IClientPayload): void {
+    const requiredStringFields: Array<keyof IClientPayload> = [
+      'externalId',
+      'firstname',
+      'lastname',
+      'mobileNo',
+      'emailAddress',
+    ];
+
+    for (const field of requiredStringFields) {
+      const value = payload[field];
+      if (!value || (typeof value === 'string' && value.trim().length === 0)) {
+        throw new Error(`Missing or empty required field: ${field}`);
+      }
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(payload.emailAddress)) {
+      throw new Error(`Invalid email format: ${payload.emailAddress}`);
+    }
+
+    const mobileRegex = /^\+?[\d\s-()]+$/;
+    if (!mobileRegex.test(payload.mobileNo)) {
+      throw new Error(`Invalid mobile number format: ${payload.mobileNo}`);
+    }
+
+    if (!payload.officeId || payload.officeId <= 0) {
+      throw new Error('Invalid officeId: must be a positive number');
+    }
+
+    if (!payload.savingsProductId || payload.savingsProductId <= 0) {
+      throw new Error('Invalid savingsProductId: must be a positive number');
+    }
+
+    if (!payload.activationDate || !payload.submittedOnDate || !payload.dateOfBirth) {
+      throw new Error('Missing required date fields: activationDate, submittedOnDate, or dateOfBirth');
+    }
+
+    logger.debug('Client payload validation passed', {
+      externalId: payload.externalId,
+    });
   }
 }
 

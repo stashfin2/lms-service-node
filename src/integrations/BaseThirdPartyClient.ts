@@ -7,6 +7,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { logger } from '../utils/logger';
 import { IThirdPartyClient } from './IThirdPartyClient';
+import { ThirdPartyApiError } from '../errors/ThirdPartyApiError';
 
 /**
  * Base Third Party API Client
@@ -132,13 +133,28 @@ export abstract class BaseThirdPartyClient implements IThirdPartyClient {
       // Server responded with error status
       const responseData = error.response.data as any;
       const message = responseData?.message || responseData?.error || error.response.statusText || 'Unknown error';
-      return new Error(`API Error (${error.response.status}): ${message}`);
+      return new ThirdPartyApiError(
+        `API Error (${error.response.status}): ${message}`,
+        error.response.status,
+        responseData,
+        error
+      );
     } else if (error.request) {
       // Request made but no response received
-      return new Error(`Network Error: No response from server`);
+      return new ThirdPartyApiError(
+        'Network Error: No response from server',
+        undefined,
+        undefined,
+        error
+      );
     } else {
       // Error setting up request
-      return new Error(`Request Error: ${error.message}`);
+      return new ThirdPartyApiError(
+        `Request Error: ${error.message}`,
+        undefined,
+        undefined,
+        error
+      );
     }
   }
 

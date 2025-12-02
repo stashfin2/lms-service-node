@@ -6,6 +6,8 @@ import { FineractApiClient, IThirdPartyClient } from '../integrations';
 import { FineractCreateClientRequest, FineractCreateClientResponse } from '../models/third-party/fineract.client.model';
 import { Client } from '../models/database-models';
 import { fineractConfig } from '../config/fineract.config';
+import { ThirdPartyApiError } from '../errors/ThirdPartyApiError';
+import { FineractConstants } from '../config/fineract.constants';
 
 @injectable()
 export class FineractClientService {   
@@ -62,13 +64,30 @@ export class FineractClientService {
         clientId: fineractResponse.clientId,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (this.isDuplicateClientError(error)) {
+        logger.info('Client already exists in Fineract platform', {
+          resourceExternalId: payload.externalId,
+        });
+        return;
+      }
+
+      const genericError = error as Error;
       logger.error('Error creating client', {
         resourceExternalId: payload.externalId,
-        error: error.message,
-        stack: error.stack,
+        error: genericError.message,
+        stack: genericError.stack,
       });
-      throw new Error(`Failed to create client: ${payload.externalId}. ${error.message}`);
+      throw new Error(`Failed to create client: ${payload.externalId}. ${genericError.message}`);
     }
+  }
+
+  private isDuplicateClientError(error: unknown): boolean {
+    if (!(error instanceof ThirdPartyApiError)) {
+      return false;
+    }
+
+    const responseData = error.data as { userMessageGlobalisationCode?: string } | undefined;
+    return responseData?.userMessageGlobalisationCode === FineractConstants.USER_MESSAGE_CODES.CLIENT_DUPLICATE_EXTERNAL_ID;
   }
 }
