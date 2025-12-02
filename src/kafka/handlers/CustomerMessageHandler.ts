@@ -4,10 +4,11 @@
  * Follows Single Responsibility Principle
  */
 
-import { injectable } from 'tsyringe';
+import { container, injectable } from 'tsyringe';
 import { IMessageHandler } from '../interfaces/IConsumer';
 import { IEvent } from '../interfaces/IEvent';
 import { logger } from '../../utils/logger';
+import { FineractClientControllerV1 } from '../../controllers/fineract.client.controller.v1';
 
 @injectable()
 export class CustomerMessageHandler implements IMessageHandler {
@@ -40,16 +41,18 @@ export class CustomerMessageHandler implements IMessageHandler {
       throw error;
     }
   }
-
   private async handleCustomerCreated(event: IEvent): Promise<void> {
     logger.info('Handling customer created', {
       eventId: event.eventId,
       payload: event.payload,
     });
 
+    const fineractClientController = container.resolve(FineractClientControllerV1); // Use resolve instead of get
+
     // Business logic for customer created
     // Example: Send welcome email, create user profile in external systems
     // TODO: Implement actual business logic
+    await fineractClientController.createFineractClient(event.payload);
   }
 
   private async handleCustomerUpdated(event: IEvent): Promise<void> {
