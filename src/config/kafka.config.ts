@@ -30,6 +30,11 @@ export enum KafkaTopics {
   // System Topics
   AUDIT_LOG = 'lms.system.audit.log',
   ERROR_LOG = 'lms.system.error.log',
+
+  // Savings Integration Topics
+  FINERACT_SAVINGS_CREATED = 'lms.fineract.savings.created',
+  FINERACT_SAVINGS_UPDATED = 'lms.fineract.savings.updated',
+  FINERACT_SAVINGS_DELETED = 'lms.fineract.savings.deleted'
 }
 
 export interface TopicConfiguration {
@@ -128,6 +133,21 @@ export const TOPIC_CONFIGURATIONS: TopicConfiguration[] = [
     numPartitions: 3,
     replicationFactor: 2,
   },
+  {
+    topic: KafkaTopics.FINERACT_SAVINGS_CREATED,
+    numPartitions: 2,
+    replicationFactor: 2,
+  },
+  {
+    topic: KafkaTopics.FINERACT_SAVINGS_UPDATED,
+    numPartitions: 2,
+    replicationFactor: 2,
+  },
+  {
+    topic: KafkaTopics.FINERACT_SAVINGS_DELETED,
+    numPartitions: 2,
+    replicationFactor: 2,
+  },
 ];
 
 /**
@@ -184,6 +204,14 @@ export const CONSUMER_GROUP_CONFIGS = {
     groupId: 'lms-error-processor-group',
     topics: [
       KafkaTopics.ERROR_LOG,
+    ],
+  },
+  FINERACT_SAVINGS_PROCESSOR: {
+    groupId: 'lms-fineract-savings-processor-group',
+    topics: [
+      KafkaTopics.FINERACT_SAVINGS_CREATED,
+      KafkaTopics.FINERACT_SAVINGS_UPDATED,
+      KafkaTopics.FINERACT_SAVINGS_DELETED,
     ],
   },
 };
