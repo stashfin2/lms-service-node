@@ -6,6 +6,8 @@ import { FineractApiClient, IThirdPartyClient } from '../integrations';
 import { FineractCreateClientRequest, FineractCreateClientResponse } from '../models/third-party/fineract.client.model';
 import { Client } from '../models/database-models';
 import { fineractConfig } from '../config/fineract.config';
+import { ThirdPartyApiError } from '../errors/ThirdPartyApiError';
+import { FineractConstants } from '../config/fineract.constants';
 
 @injectable()
 export class FineractClientService {   
@@ -14,63 +16,8 @@ export class FineractClientService {
     @inject(FineractApiClient) private thirdPartyClient: IThirdPartyClient
   ) {}
 
-  /**
-   * Validates the client payload before creating
-   * @throws Error if validation fails
-   */
-  private validateClientPayload(payload: IClientPayload): void {
-    // Required string fields
-    const requiredStringFields: Array<keyof IClientPayload> = [
-      'externalId',
-      'firstname',
-      'lastname',
-      'mobileNo',
-      'emailAddress',
-    ];
-
-    for (const field of requiredStringFields) {
-      const value = payload[field];
-      if (!value || (typeof value === 'string' && value.trim().length === 0)) {
-        throw new Error(`Missing or empty required field: ${field}`);
-      }
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(payload.emailAddress)) {
-      throw new Error(`Invalid email format: ${payload.emailAddress}`);
-    }
-
-    // Validate mobile number (basic check)
-    const mobileRegex = /^\+?[\d\s-()]+$/;
-    if (!mobileRegex.test(payload.mobileNo)) {
-      throw new Error(`Invalid mobile number format: ${payload.mobileNo}`);
-    }
-
-    // Validate required numeric fields
-    if (!payload.officeId || payload.officeId <= 0) {
-      throw new Error('Invalid officeId: must be a positive number');
-    }
-
-    if (!payload.savingsProductId || payload.savingsProductId <= 0) {
-      throw new Error('Invalid savingsProductId: must be a positive number');
-    }
-
-    // Validate date fields are provided
-    if (!payload.activationDate || !payload.submittedOnDate || !payload.dateOfBirth) {
-      throw new Error('Missing required date fields: activationDate, submittedOnDate, or dateOfBirth');
-    }
-
-    logger.debug('Client payload validation passed', {
-      externalId: payload.externalId,
-    });
-  }
-
   public async createClient(payload: IClientPayload): Promise<void> {  
     try {
-      // Validate input payload
-      this.validateClientPayload(payload);
-
       // Check if client already exists in database
       const existingClient = await this.clientDbService.getClientByExternalId(payload.externalId);
       if (existingClient) {
@@ -117,13 +64,30 @@ export class FineractClientService {
         clientId: fineractResponse.clientId,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (this.isDuplicateClientError(error)) {
+        logger.info('Client already exists in Fineract platform', {
+          resourceExternalId: payload.externalId,
+        });
+        return;
+      }
+
+      const genericError = error as Error;
       logger.error('Error creating client', {
         resourceExternalId: payload.externalId,
-        error: error.message,
-        stack: error.stack,
+        error: genericError.message,
+        stack: genericError.stack,
       });
-      throw new Error(`Failed to create client: ${payload.externalId}. ${error.message}`);
+      throw new Error(`Failed to create client: ${payload.externalId}. ${genericError.message}`);
     }
+  }
+
+  private isDuplicateClientError(error: unknown): boolean {
+    if (!(error instanceof ThirdPartyApiError)) {
+      return false;
+    }
+
+    const responseData = error.data as { userMessageGlobalisationCode?: string } | undefined;
+    return responseData?.userMessageGlobalisationCode === FineractConstants.USER_MESSAGE_CODES.CLIENT_DUPLICATE_EXTERNAL_ID;
   }
 }

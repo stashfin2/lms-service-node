@@ -44,5 +44,12 @@ export const FineractConstants = {
    * Family details datatable name (as registered in Fineract)
    */
   DATATABLE_FAMILY_DETAILS: 'Family Details',
+
+  /**
+   * Fineract user message codes that we explicitly handle
+   */
+  USER_MESSAGE_CODES: {
+    CLIENT_DUPLICATE_EXTERNAL_ID: 'error.msg.client.duplicate.externalId',
+  },
 } as const;
 
