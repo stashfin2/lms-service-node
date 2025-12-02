@@ -8,6 +8,7 @@ import {
   LoanDisbursementInitiatedEvent,
   CustomerCreatedEvent,
   PaymentReceivedEvent,
+  SavingsAccountCreatedEvent,
 } from '../kafka/events';
 import { KafkaTopics } from '../config/kafka.config';
 import { logger } from '../utils/logger';
@@ -77,6 +78,58 @@ export class LmsControllerV1 {
       });
     }
   };
+  /**
+   * Create and approve and activate a savings account
+   * Demonstrates publishing a savings account created event
+   */
+  public createAndAprroveAndActivateSavingsAccount = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { customerId, loanId, overdraftLimit } = req.body;
+
+      // Business logic - create SavingsAccount application
+
+
+      logger.info('Creating SavingAccount application', {customerId });
+
+      // Publish event to Kafka
+      const event = new SavingsAccountCreatedEvent(
+        {
+          customerId,
+          loanId,
+          overdraftLimit,
+          status: 'PENDING',
+          createdAt: new Date(),
+        },
+        {
+          correlationId: req.headers['x-correlation-id'] as string,
+          triggeredBy: (req as any).user?.id || 'system',
+        }
+      );
+
+      await this.eventPublisher.publish(
+        KafkaTopics.FINERACT_SAVINGS_CREATED,
+        event,
+        customerId
+      );
+
+      res.status(201).json({
+        success: true,
+        data: {
+          applicationId,
+          customerId,
+          loanId,
+          status: 'PENDING',
+          message: 'SavingsAccount application created successfully',
+        },
+      });
+    } catch (error: any) {
+      logger.error('Error creating SavingsAccount application', { error });
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  };
 
   /**
    * Approve a loan application
@@ -136,6 +189,7 @@ export class LmsControllerV1 {
       });
     }
   };
+
 
   /**
    * Initiate loan disbursement

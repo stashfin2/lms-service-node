@@ -59,6 +59,33 @@ export class LoanApplicationUpdatedEvent extends BaseEvent {
     return (this.payload as LoanApplicationPayload).customerId;
   }
 }
+export interface SavingAccountPayload {
+  loanId: string;
+  customerId: string;
+  overdraftLimit: number;
+  status: string;
+  createdAt: Date;
+  metadata?: Record<string, any>;
+}
+
+export class SavingsAccountCreatedEvent extends BaseEvent {
+  constructor(
+    payload: SavingAccountPayload,
+    options?: {
+      correlationId?: string;
+      triggeredBy?: string;
+      metadata?: Record<string, any>;
+    }
+  ) {
+    super('SavingsAccountCreated', payload, {
+      ...options,
+      version: '1.0.0',
+    });
+  }
+  public getPartitionKey(): string {
+    return (this.payload as SavingAccountPayload).customerId;
+  }
+}
 
 export class LoanApplicationApprovedEvent extends BaseEvent {
   constructor(

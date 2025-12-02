@@ -9,4 +9,5 @@ export * from './PaymentMessageHandler';
 export * from './FineractSyncMessageHandler';
 export * from './AuditMessageHandler';
 export * from './ErrorMessageHandler';
+export * from './SavingsAccountMessageHandler';
 
