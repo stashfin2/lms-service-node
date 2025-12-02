@@ -1,6 +1,6 @@
 
 import { IClientPayload, IClientSuccessResponse } from "../../schema/fineract.client.interface.js";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../../utils/logger";
 
 export class FineractCreateClientRequest {
   officeId!: number;
