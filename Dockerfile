@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (including devDependencies for TypeScript build)
-RUN npm ci
+RUN npm i
 
 # Copy source code and configuration
 COPY tsconfig.json ./
@@ -33,7 +33,7 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && \
+RUN npm i --only=production && \
     npm cache clean --force
 
 # Copy built application from builder stage
