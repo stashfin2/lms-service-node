@@ -20,7 +20,7 @@ pipeline {
                 container('dind'){
                     script {
                         withCredentials([usernamePassword(credentialsId: "stashfin2-github-jenkins-integrate", usernameVariable: 'GITHUB_APP_ID', passwordVariable: 'GITHUB_APP_TOKEN')]) {
-                            sh "rm -rf infraverse && git clone https://${GITHUB_APP_ID}:${GITHUB_APP_TOKEN}@github.com/stashfin2/infraverse.git"
+                            sh "rm -rf infraverse && git clone https://${GITHUB_APP_ID}:${GITHUB_APP_TOKEN}@github.com/stashfin2/infraverse.git -b lms-service-node"
                         }
                         sh 'ls -l infraverse'
                     }
