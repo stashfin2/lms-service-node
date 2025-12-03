@@ -16,6 +16,7 @@ import {
   FineractSyncMessageHandler,
   AuditMessageHandler,
   ErrorMessageHandler,
+  SavingsAccountMessageHandler,
 } from '../handlers';
 import { logger } from '../../utils/logger';
 
@@ -48,6 +49,7 @@ export class ConsumerManager {
       this.createFineractSyncConsumer();
       this.createAuditConsumer();
       this.createErrorConsumer();
+      this.createSavingsAccountConsumer();
 
       this.initialized = true;
       logger.info('ConsumerManager initialized successfully', {
@@ -219,6 +221,17 @@ export class ConsumerManager {
     );
     this.consumers.push(consumer);
     logger.info('Error consumer created', { groupId: config.groupId, topics: config.topics });
+  }
+  private createSavingsAccountConsumer(): void {
+    const config = CONSUMER_GROUP_CONFIGS.FINERACT_SAVINGS_PROCESSOR;
+    const handler = container.resolve(SavingsAccountMessageHandler);
+    const consumer = this.consumerFactory.createConsumer(
+      config.groupId,
+      config.topics,
+      handler
+    );
+    this.consumers.push(consumer);
+    logger.info('SavingsAccount consumer created', { groupId: config.groupId, topics: config.topics });
   }
 }
 

@@ -115,7 +115,6 @@ export class LmsControllerV1 {
       res.status(201).json({
         success: true,
         data: {
-          applicationId,
           customerId,
           loanId,
           status: 'PENDING',

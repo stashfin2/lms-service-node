@@ -62,6 +62,9 @@ router.post('/v1/lms/disbursements', lmsController.initiateDisbursement);
 // Payment Management
 router.post('/v1/lms/payments', lmsController.recordPayment);
 
+
+router.post('/v1/lms/savings-accounts', lmsController.createAndAprroveAndActivateSavingsAccount);
+
 // ==================== Kafka Monitoring Routes ====================
 
 // Dashboard and Overview
