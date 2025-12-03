@@ -34,7 +34,8 @@ export abstract class BaseConsumer implements IConsumer {
     this.consumer = kafka.consumer({
       groupId: this.groupId,
       sessionTimeout: 30000,
-      heartbeatInterval: 10000,
+      heartbeatInterval: 3000,
+      maxInFlightRequests:1,
       maxBytesPerPartition: 1048576, // 1MB
       retry: {
         retries: 5,

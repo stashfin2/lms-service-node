@@ -31,7 +31,7 @@ class App {
   private initializeMiddlewares(): void {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    
+
     // Add Kafka-related middleware
     this.app.use(eventPublishingMiddleware);
     this.app.use(auditMiddleware);
@@ -129,7 +129,7 @@ class App {
   private setupGracefulShutdown(): void {
     const shutdown = async (signal: string) => {
       logger.info(`Received ${signal}, starting graceful shutdown`);
-      
+
       try {
         await this.shutdownKafka();
         logger.info('Graceful shutdown complete');
