@@ -130,34 +130,49 @@ export abstract class BaseThirdPartyClient implements IThirdPartyClient {
    */
   protected handleError(error: AxiosError): Error {
     if (error.response) {
-      // Server responded with error status
-      const responseData = error.response.data as any;
-      const message = responseData?.message || responseData?.error || error.response.statusText || 'Unknown error';
+      const data: any = error.response.data;
+  
+      let message = 
+        data?.message ||
+        data?.error ||
+        data?.defaultUserMessage ||
+        data?.developerMessage ||
+        error.response.statusText ||
+        'Unknown error';
+  
+      // If validation errors exist — build a combined message
+      if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        const validationMessages = data.errors
+          .map((e: any) => e.defaultUserMessage || e.developerMessage || JSON.stringify(e))
+          .join('; ');
+        message = validationMessages;
+      }
+  
       return new ThirdPartyApiError(
         `API Error (${error.response.status}): ${message}`,
         error.response.status,
-        responseData,
+        data,
         error
       );
-    } else if (error.request) {
-      // Request made but no response received
+    }
+  
+    if (error.request) {
       return new ThirdPartyApiError(
         'Network Error: No response from server',
         undefined,
         undefined,
         error
       );
-    } else {
-      // Error setting up request
-      return new ThirdPartyApiError(
-        `Request Error: ${error.message}`,
-        undefined,
-        undefined,
-        error
-      );
     }
+  
+    return new ThirdPartyApiError(
+      `Request Error: ${error.message}`,
+      undefined,
+      undefined,
+      error
+    );
   }
-
+  
   /**
    * GET request
    */

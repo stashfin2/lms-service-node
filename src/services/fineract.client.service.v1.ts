@@ -39,6 +39,9 @@ export class FineractClientService {
         {
           headers: {
             'Fineract-Platform-TenantId': fineractConfig.tenantId,
+            'Authorization': fineractConfig.basicAuth,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
         },
         payload.externalId

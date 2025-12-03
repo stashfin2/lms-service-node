@@ -5,6 +5,7 @@ import { logger } from "../../utils/logger";
 export class FineractCreateClientRequest {
   officeId!: number;
   firstname!: string;
+  legalFormId!: number;
   lastname!: string;
   externalId!: string;
   active!: boolean;
@@ -14,7 +15,6 @@ export class FineractCreateClientRequest {
   emailAddress!: string;
   dateFormat!: string;
   locale!: string;
-  savingsProductId!: number;
   datatables?: Array<{
     registeredTableName: string;
     data: Record<string, any>;
@@ -26,6 +26,7 @@ export class FineractCreateClientRequest {
     this.officeId = payload.officeId;
     this.firstname = payload.firstname;
     this.lastname = payload.lastname;
+    this.legalFormId = payload.legalFormId;
     this.externalId = payload.externalId;
     this.active = payload.active;
     this.activationDate = payload.activationDate;
@@ -34,20 +35,8 @@ export class FineractCreateClientRequest {
     this.emailAddress = payload.emailAddress;
     this.dateFormat = payload.dateFormat;
     this.locale = payload.locale;
-    this.savingsProductId = payload.savingsProductId;
-
-    // Convert family members → datatables format
-    this.datatables = [
-      {
-        registeredTableName: "Family Details",
-        data: {
-          locale: "en",
-          "Number of members": payload.familyMembers.length,
-          "Date of verification": payload.submittedOnDate,
-          dateFormat: payload.dateFormat
-        }
-      }
-    ];
+    // this.savingsProductId = payload.savingsProductId;
+ 
   }
 
   private validatePayload(payload: IClientPayload): void {
@@ -80,12 +69,12 @@ export class FineractCreateClientRequest {
       throw new Error('Invalid officeId: must be a positive number');
     }
 
-    if (!payload.savingsProductId || payload.savingsProductId <= 0) {
-      throw new Error('Invalid savingsProductId: must be a positive number');
-    }
-
     if (!payload.activationDate || !payload.submittedOnDate || !payload.dateOfBirth) {
       throw new Error('Missing required date fields: activationDate, submittedOnDate, or dateOfBirth');
+    }
+
+    if(payload.legalFormId === undefined || payload.legalFormId === null) {
+      throw new Error('Missing required field: legalFormId');
     }
 
     logger.debug('Client payload validation passed', {
