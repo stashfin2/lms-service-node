@@ -17,11 +17,14 @@ export class ClientRepository {
 
   public async getClientByExternalId(resourceExternalId: string): Promise<Client | null> {
     try {
-      const [rows] = await this.pool.query<ClientModel[]>(
-        'SELECT * FROM fineract_client WHERE resourceExternalId = ?',
+      const [rows] = await this.pool.query<RowDataPacket[]>(
+        'SELECT * FROM fineract_client WHERE resource_external_id = ?',
         [resourceExternalId]
       );
-      return rows[0] as Client | null;
+      if (!rows[0]) {
+        return null;
+      }
+      return this.mapClient(rows[0]);
     } catch (error: any) {
       logger.error('Error getting client by external ID', {
         resourceExternalId,
@@ -47,8 +50,8 @@ export class ClientRepository {
 
   public async listClients(): Promise<Client[]> {
     try {
-      const [rows] = await this.pool.query<ClientModel[]>('SELECT * FROM fineract_client');
-      return rows as Client[];
+      const [rows] = await this.pool.query<RowDataPacket[]>('SELECT * FROM fineract_client');
+      return rows.map(row => this.mapClient(row));
     } catch (error: any) {
       logger.error('Error listing clients', {
         operation: 'listClients',
@@ -72,18 +75,18 @@ export class ClientRepository {
       const now = new Date();
       const [result] = await this.pool.query<ResultSetHeader>(
         `INSERT INTO fineract_client (
-          id, officeId, clientId, savingsId, resourceId, 
-          resourceExternalId, status, createDate, updateDate
+          id, office_id, client_id, savings_id, resource_id, 
+          resource_external_id, status, create_date, update_date
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
-          officeId = COALESCE(VALUES(officeId), officeId),
-          clientId = COALESCE(VALUES(clientId), clientId),
-          savingsId = COALESCE(VALUES(savingsId), savingsId),
-          resourceId = COALESCE(VALUES(resourceId), resourceId),
-          resourceExternalId = VALUES(resourceExternalId),
+          office_id = COALESCE(VALUES(office_id), office_id),
+          client_id = COALESCE(VALUES(client_id), client_id),
+          savings_id = COALESCE(VALUES(savings_id), savings_id),
+          resource_id = COALESCE(VALUES(resource_id), resource_id),
+          resource_external_id = VALUES(resource_external_id),
           status = VALUES(status),
-          updateDate = VALUES(updateDate)
+          update_date = VALUES(update_date)
         `,
         [
           client.id ?? null,
@@ -112,7 +115,7 @@ export class ClientRepository {
   public async checkClientExists(resourceExternalId: string): Promise<boolean> {
     try {
       const [rows] = await this.pool.query<(RowDataPacket & { count: number })[]>(
-        'SELECT COUNT(*) as count FROM fineract_client WHERE resourceExternalId = ? and status = "active"',
+        'SELECT COUNT(*) as count FROM fineract_client WHERE resource_external_id = ? and status = "active"',
         [resourceExternalId]
       );
       return rows[0].count > 0;
@@ -126,6 +129,22 @@ export class ClientRepository {
     }
   }
 
+  /**
+   * Map database row (snake_case) to Client model (camelCase)
+   */
+  private mapClient(row: RowDataPacket): Client {
+    return {
+      id: row.id,
+      officeId: row.office_id,
+      clientId: row.client_id,
+      savingsId: row.savings_id,
+      resourceId: row.resource_id,
+      resourceExternalId: row.resource_external_id,
+      status: row.status,
+      createDate: row.create_date,
+      updateDate: row.update_date,
+    };
+  }
 
 }
 

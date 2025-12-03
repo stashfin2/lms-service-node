@@ -9,8 +9,6 @@ import { fineractConfig } from '../config/fineract.config';
 
 @injectable()
 export class FineractApiClient extends BaseThirdPartyClient {
-  private apiKey: string;
-  private tenantId: string;
 
   constructor() {
     super(
@@ -19,13 +17,11 @@ export class FineractApiClient extends BaseThirdPartyClient {
       fineractConfig.retryAttempts,
       {
         'Fineract-Platform-TenantId': fineractConfig.tenantId,
-        'Authorization': `Basic ${Buffer.from(`${fineractConfig.tenantId}:${fineractConfig.apiKey}`).toString('base64')}`,
+        'Authorization': fineractConfig.basicAuth,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     );
-
-    this.apiKey = fineractConfig.apiKey;
-    this.tenantId = fineractConfig.tenantId;
   }
 
 }
-

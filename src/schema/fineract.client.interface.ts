@@ -22,7 +22,6 @@ export interface IClientPayload {
   submittedOnDate: string;
   firstname: string;
   lastname: string;
-  savingsProductId: number;
   familyMembers: any[];
   dateFormat: string;
   locale: string;

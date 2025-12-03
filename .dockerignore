@@ -1,0 +1,68 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+dist
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Scripts (not needed in container)
+# Note: SSH tunnel scripts are for LOCAL DEVELOPMENT only.
+# In staging/production, Kafka should be directly accessible via:
+# - Same VPC/network configuration
+# - Service mesh or load balancer
+# - Environment variable: KAFKA_BOOTSTRAP_SERVERS
+# If SSH tunneling is needed in staging, handle it at infrastructure level
+# (init containers, sidecars, or bastion hosts), not inside the app container.
+scripts
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+coverage
+
+# Logs
+logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (don't copy into image)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# SSH and tunnel scripts (local development only)
+# These create tunnels from your local machine to remote Kafka.
+# In staging/production, configure KAFKA_BOOTSTRAP_SERVERS to point
+# directly to Kafka brokers accessible via network.
+*.sh
+*.pem
+
+# Temporary files
+tmp
+temp
+

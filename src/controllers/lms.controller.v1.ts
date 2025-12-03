@@ -272,7 +272,6 @@ export class LmsControllerV1 {
         submittedOnDate: formatToReadableDate(new Date()),
         firstname: firstName,
         lastname: lastName,
-        savingsProductId: FineractConstants.DEFAULT_SAVINGS_PRODUCT_ID,
         familyMembers: [],
         dateFormat: FineractConstants.DATE_FORMAT,
         locale: FineractConstants.LOCALE,
