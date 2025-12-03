@@ -36,6 +36,19 @@ if [ ! -f "$SSH_KEY" ]; then
     exit 1
 fi
 
+# Check and fix SSH key permissions
+KEY_PERMS=$(stat -f "%OLp" "$SSH_KEY" 2>/dev/null || stat -c "%a" "$SSH_KEY" 2>/dev/null || echo "000")
+if [ "$KEY_PERMS" != "400" ] && [ "$KEY_PERMS" != "600" ]; then
+    echo -e "${YELLOW}Fixing SSH key permissions (current: $KEY_PERMS, required: 400)${NC}"
+    chmod 400 "$SSH_KEY"
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Permissions fixed${NC}"
+    else
+        echo -e "${RED}✗ Failed to fix permissions. Please run: chmod 400 $SSH_KEY${NC}"
+        exit 1
+    fi
+fi
+
 # Check if tunnel is already running
 TUNNEL_PID=$(lsof -ti:$LOCAL_PORT 2>/dev/null || echo "")
 if [ -n "$TUNNEL_PID" ]; then
