@@ -1,6 +1,17 @@
 import * as dotenv from 'dotenv';
 
-dotenv.config();
+console.log('[DEBUG] Loading environment config...');
+try {
+  const result = dotenv.config();
+  if (result.error) {
+    console.error('[ERROR] Failed to load .env file:', result.error);
+  } else {
+    console.log('[DEBUG] .env file loaded successfully');
+  }
+} catch (error) {
+  console.error('[ERROR] Exception loading .env file:', error);
+  throw error;
+}
 
 /**
  * Validate required environment variable
@@ -8,6 +19,7 @@ dotenv.config();
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
+    console.error(`[ERROR] Missing required environment variable: ${name}`);
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
@@ -19,6 +31,8 @@ function requireEnv(name: string): string {
 function getEnv(name: string): string | undefined {
   return process.env[name];
 }
+
+console.log('[DEBUG] Building config object...');
 
 export const config = {
   nodeEnv: requireEnv('NODE_ENV'),
@@ -55,4 +69,6 @@ export const config = {
     level: requireEnv('LOG_LEVEL'),
   },
 };
+
+console.log('[DEBUG] Config object created successfully');
 

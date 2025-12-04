@@ -5,6 +5,7 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import https from 'https';
 import { logger } from '../utils/logger';
 import { IThirdPartyClient } from './IThirdPartyClient';
 import { ThirdPartyApiError } from '../errors/ThirdPartyApiError';
@@ -29,6 +30,14 @@ export abstract class BaseThirdPartyClient implements IThirdPartyClient {
     this.timeout = timeout;
     this.retryAttempts = retryAttempts;
 
+    // Configure HTTPS agent for localhost with self-signed certificates
+    const isLocalhost = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1');
+    const httpsAgent = isLocalhost
+      ? new https.Agent({
+          rejectUnauthorized: false, // Accept self-signed certificates for localhost
+        })
+      : undefined;
+
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
       timeout: this.timeout,
@@ -36,6 +45,7 @@ export abstract class BaseThirdPartyClient implements IThirdPartyClient {
         'Content-Type': 'application/json',
         ...defaultHeaders,
       },
+      ...(httpsAgent && { httpsAgent }),
     });
 
     this.setupInterceptors();
