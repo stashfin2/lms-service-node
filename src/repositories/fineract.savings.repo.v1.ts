@@ -141,6 +141,23 @@ export class SavingsRepository {
         }
     }
 
+    public async checkSavingsAccountExistsByLoanId(loanId: string): Promise<boolean> {
+        try {
+            const [rows] = await this.pool.query<(RowDataPacket & { count: number })[]>(
+                'SELECT COUNT(*) as count FROM fineract_savings_account WHERE loanId = ? AND (isDeleted = false OR isDeleted IS NULL)',
+                [loanId]
+            );
+            return rows[0].count > 0;
+        } catch (error: any) {
+            logger.error('Error while checking savings account using loanId', {
+                loanId,
+                error: error.message,
+                stack: error.stack,
+            });
+            throw new Error(`Failed to check savings account existence using loanId: ${loanId}. ${error.message}`);
+        }
+    }
+
 
 }
 

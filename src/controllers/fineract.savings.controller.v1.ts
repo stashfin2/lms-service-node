@@ -1,9 +1,7 @@
 import { injectable, inject } from 'tsyringe';
-import { FineractClientService } from '../services/fineract.client.service.v1';
-import { IClientPayload } from '../schema/fineract.client.interface';
 import { FineractSavingsService } from '../services/fineract.savings.service.v1';
-import { ISavingsPayload } from '../schema/fineract.savings.interface';
 import { SavingAccountPayload } from '../kafka';
+import { IWithdrawalPayload} from '../schema/fineract.withdrawal.interface';
 
 @injectable()
 export class FineractSavingsControllerV1 {   
@@ -13,6 +11,10 @@ export class FineractSavingsControllerV1 {
 
   public async createAndAprroveAndActivateSavingsAccount(payload: SavingAccountPayload): Promise<void> {  
     return this.fineractService.createAndAprroveAndActivateSavingsAccount(payload);
+  }
+
+  public async withdrawFromSavingsAccount(payload:IWithdrawalPayload): Promise<void> {
+    // return this.fineractService.withdrawFromSavingsAccount();
   }
 }
 

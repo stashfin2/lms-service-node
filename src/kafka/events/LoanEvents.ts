@@ -5,6 +5,7 @@
  */
 
 import { BaseEvent } from '../models/BaseEvent';
+import { IlmsWithdrawalPayload  } from '../../schema/fineract.withdrawal.interface';
 
 // ==================== Loan Application Events ====================
 
@@ -137,24 +138,11 @@ export class LoanApplicationRejectedEvent extends BaseEvent {
 
 // ==================== Loan Disbursement Events ====================
 
-export interface LoanDisbursementPayload {
-  disbursementId: string;
-  loanId: string;
-  customerId: string;
-  amount: number;
-  bankAccount: {
-    accountNumber: string;
-    ifscCode: string;
-    accountHolderName: string;
-  };
-  status: string;
-  initiatedAt: Date;
-  metadata?: Record<string, any>;
-}
 
-export class LoanDisbursementInitiatedEvent extends BaseEvent {
+
+export class withdrawalInitiatedEvent extends BaseEvent {
   constructor(
-    payload: LoanDisbursementPayload,
+    payload: IlmsWithdrawalPayload,
     options?: {
       correlationId?: string;
       triggeredBy?: string;
@@ -168,13 +156,13 @@ export class LoanDisbursementInitiatedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as LoanDisbursementPayload).customerId;
+    return (this.payload as IlmsWithdrawalPayload).customerId;
   }
 }
 
 export class LoanDisbursementCompletedEvent extends BaseEvent {
   constructor(
-    payload: LoanDisbursementPayload & {
+    payload: IlmsWithdrawalPayload & {
       completedAt: Date;
       transactionReference: string;
     },
@@ -191,13 +179,13 @@ export class LoanDisbursementCompletedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as LoanDisbursementPayload).customerId;
+    return (this.payload as IlmsWithdrawalPayload).customerId;
   }
 }
 
 export class LoanDisbursementFailedEvent extends BaseEvent {
   constructor(
-    payload: LoanDisbursementPayload & {
+    payload: IlmsWithdrawalPayload & {
       failedAt: Date;
       failureReason: string;
       errorCode?: string;
@@ -215,7 +203,7 @@ export class LoanDisbursementFailedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as LoanDisbursementPayload).customerId;
+    return (this.payload as IlmsWithdrawalPayload).customerId;
   }
 }
 

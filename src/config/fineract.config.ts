@@ -4,7 +4,7 @@ import { IChargeData } from '../schema/fineract.savings.interface';
 dotenv.config();
 
 export const fineractConfig = {
-  baseUrl: process.env.FINERACT_BASE_URL || 'https://localhost:8443/fineract-provider',
+  baseUrl: process.env.FINERACT_BASE_URL || 'http://13.201.18.237/fineract-provider',
   tenantId: 'default',
   username: process.env.FINERACT_USERNAME || 'mifos',
   password: process.env.FINERACT_PASSWORD || 'password',

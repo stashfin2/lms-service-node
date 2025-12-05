@@ -1,6 +1,4 @@
 import { inject, injectable } from 'tsyringe';
-import { ClientRepository } from '../repositories/fineract.client.repo.v1';
-import { Client } from '../models/database-models';
 import { SavingsRepository } from '../repositories/fineract.savings.repo.v1';
 import { SavingsAccount } from '../models/database-models/savingsAccount';
 
@@ -29,5 +27,8 @@ export class SavingsDatabaseServiceV1 {
 
     public async listSavingsAccounts(): Promise<SavingsAccount[]> {
         return await this.savingsRepo.listSavingsAccounts();
+    }
+    public async checkSavingsAccountExistsByLoanId(savingsAccountId: string): Promise<boolean> {
+        return await this.savingsRepo.checkSavingsAccountExistsByLoanId(savingsAccountId);
     }
 }

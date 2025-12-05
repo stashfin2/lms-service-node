@@ -5,7 +5,7 @@ import { EventPublisher } from '../kafka/services/EventPublisher';
 import {
   LoanApplicationCreatedEvent,
   LoanApplicationApprovedEvent,
-  LoanDisbursementInitiatedEvent,
+  withdrawalInitiatedEvent,
   CustomerCreatedEvent,
   PaymentReceivedEvent,
   SavingsAccountCreatedEvent,
@@ -14,6 +14,7 @@ import { KafkaTopics } from '../config/kafka.config';
 import { logger } from '../utils/logger';
 import { formatToReadableDate } from '../utils/dateFormatter';
 import { IClientPayload } from '../schema/fineract.client.interface';
+import { IlmsWithdrawalPayload } from '../schema/fineract.withdrawal.interface';
 import { FineractConstants } from '../config/fineract.constants';
 
 @injectable()
@@ -194,30 +195,25 @@ export class LmsControllerV1 {
    * Initiate loan disbursement
    * Demonstrates publishing a disbursement initiated event
    */
-  public initiateDisbursement = async (req: Request, res: Response): Promise<void> => {
+  public initiateWithdrawal = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { loanId, amount, bankAccount } = req.body;
+      const { loanId, customerId } = req.body;
+      logger.info('Received disbursement initiation request', { loanId, customerId });
 
       const disbursementId = `DISB-${Date.now()}`;
-      const customerId = 'CUST-123'; // In real scenario, fetch from loan data
-
       logger.info('Initiating loan disbursement', { disbursementId, loanId });
-
-      // Publish event to Kafka
-      const event = new LoanDisbursementInitiatedEvent(
-        {
-          disbursementId,
-          loanId,
-          customerId,
-          amount,
-          bankAccount: {
-            accountNumber: bankAccount.accountNumber,
-            ifscCode: bankAccount.ifscCode,
-            accountHolderName: bankAccount.accountHolderName,
-          },
-          status: 'INITIATED',
-          initiatedAt: new Date(),
+      const requestData: IlmsWithdrawalPayload = {
+        loanId,
+        customerId,
+        requestPayload: {
+          ...req.body.requestPayload,
+          locale: req.body.requestPayload.locale || FineractConstants.LOCALE,
+          dateFormat: req.body.requestPayload.dateFormat || FineractConstants.DATE_FORMAT,
         },
+      };
+      // Publish event to Kafka
+      const event = new withdrawalInitiatedEvent(
+        requestData as IlmsWithdrawalPayload,
         {
           correlationId: req.headers['x-correlation-id'] as string,
           triggeredBy: (req as any).user?.id || 'system',

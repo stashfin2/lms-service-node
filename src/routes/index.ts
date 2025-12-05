@@ -57,7 +57,7 @@ router.post('/v1/lms/loan-applications', lmsController.createLoanApplication);
 router.put('/v1/lms/loan-applications/:applicationId/approve', lmsController.approveLoanApplication);
 
 // Disbursement Management
-router.post('/v1/lms/disbursements', lmsController.initiateDisbursement);
+router.post('/v1/lms/disbursements', lmsController.initiateWithdrawal);
 
 // Payment Management
 router.post('/v1/lms/payments', lmsController.recordPayment);
