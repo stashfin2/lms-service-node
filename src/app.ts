@@ -1,7 +1,12 @@
 import 'reflect-metadata';
 import express, { Application } from 'express';
 import { container } from 'tsyringe';
+
+console.log('[DEBUG] Starting app initialization...');
+
 import { config } from './config';
+console.log('[DEBUG] Config loaded successfully');
+
 import routes from './routes';
 import { DirectoryDatabaseConnector } from './connector/sql';
 import { logger } from './utils/logger';
@@ -19,13 +24,20 @@ class App {
   private consumerManager?: ConsumerManager;
 
   constructor() {
+    console.log('[DEBUG] App constructor called');
     this.app = express();
     this.port = config.port;
+    console.log('[DEBUG] Express app created, port:', this.port);
     logger.info('Initializing LMS Service', { port: this.port, env: config.nodeEnv });
+    console.log('[DEBUG] About to initialize database...');
     this.initializeDatabase();
+    console.log('[DEBUG] Database initialized, initializing middlewares...');
     this.initializeMiddlewares();
+    console.log('[DEBUG] Middlewares initialized, initializing routes...');
     this.initializeRoutes();
+    console.log('[DEBUG] Routes initialized, initializing error handling...');
     this.initializeErrorHandling();
+    console.log('[DEBUG] App constructor completed');
   }
 
   private initializeMiddlewares(): void {
@@ -56,21 +68,31 @@ class App {
    */
   private async initializeKafka(): Promise<void> {
     try {
+      console.log('[DEBUG] Starting Kafka initialization...');
       logger.info('Initializing Kafka infrastructure');
 
       // Initialize Event Publisher
+      console.log('[DEBUG] Resolving EventPublisher...');
       this.eventPublisher = container.resolve(EventPublisher);
+      console.log('[DEBUG] Initializing EventPublisher...');
       await this.eventPublisher.initialize();
       logger.info('Kafka EventPublisher initialized');
+      console.log('[DEBUG] EventPublisher initialized');
 
       // Initialize Consumer Manager
+      console.log('[DEBUG] Resolving ConsumerManager...');
       this.consumerManager = container.resolve(ConsumerManager);
+      console.log('[DEBUG] Initializing ConsumerManager...');
       await this.consumerManager.initialize();
+      console.log('[DEBUG] Starting all consumers...');
       await this.consumerManager.startAll();
       logger.info('Kafka ConsumerManager initialized and started');
+      console.log('[DEBUG] All consumers started');
 
       logger.info('Kafka infrastructure initialized successfully');
+      console.log('[DEBUG] Kafka initialization completed');
     } catch (error) {
+      console.error('[ERROR] Kafka initialization failed:', error);
       logger.error('Failed to initialize Kafka infrastructure', { error });
       throw error;
     }
@@ -104,8 +126,10 @@ class App {
    */
   public async start(): Promise<void> {
     try {
+      console.log('[DEBUG] App.start() called');
       // Initialize Kafka before starting the server
       await this.initializeKafka();
+      console.log('[DEBUG] Kafka initialized, starting HTTP server...');
 
       // Start HTTP server
       this.app.listen(this.port, () => {
@@ -117,7 +141,9 @@ class App {
 
       // Handle graceful shutdown
       this.setupGracefulShutdown();
+      console.log('[DEBUG] App started successfully');
     } catch (error) {
+      console.error('[ERROR] Failed to start application:', error);
       logger.error('Failed to start application', { error });
       process.exit(1);
     }
@@ -155,8 +181,11 @@ class App {
   }
 }
 
+console.log('[DEBUG] Creating App instance...');
 const app = new App();
+console.log('[DEBUG] App instance created, calling listen()...');
 app.listen();
+console.log('[DEBUG] listen() called');
 
 export default App;
 

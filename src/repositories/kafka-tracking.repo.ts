@@ -159,7 +159,7 @@ export class KafkaTrackingRepository {
   async createMessageProcessing(data: CreateMessageProcessingRequest): Promise<MessageProcessing> {
     const query = `
       INSERT INTO kafka_message_processing 
-        (consumer_group_id, message_id, correlation_id, topic, \`partition\`, \`offset\`, 
+        (consumer_group_id, message_id, correlation_id, topic, \`partition_number\`, \`offset_value\`, 
          event_type, event_payload, processed_by, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PROCESSING')
     `;
@@ -268,7 +268,7 @@ export class KafkaTrackingRepository {
     const query = `
       INSERT INTO kafka_consumer_errors 
         (consumer_group_id, message_processing_id, error_type, error_message, error_stack,
-         severity, topic, \`partition\`, \`offset\`, event_type, event_payload, retry_count, max_retries_exceeded)
+         severity, topic, \`partition_number\`, \`offset_value\`, event_type, event_payload, retry_count, max_retries_exceeded)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
@@ -439,7 +439,7 @@ export class KafkaTrackingRepository {
   async createConsumerOffset(data: CreateConsumerOffsetRequest): Promise<ConsumerOffset> {
     const query = `
       INSERT INTO kafka_consumer_offsets 
-        (consumer_group_id, topic, \`partition\`, current_offset, committed_offset, end_offset, lag)
+        (consumer_group_id, topic, \`partition_number\`, current_offset, committed_offset, end_offset, lag)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
