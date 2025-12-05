@@ -8,7 +8,6 @@ export class ChargeData {
     constructor(data: IChargeData) {
         this.chargeId = data.chargeId;
         this.amount = data.amount;
-        this.dueDate = data.dueDate;
     }
 }
 

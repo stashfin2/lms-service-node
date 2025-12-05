@@ -22,35 +22,15 @@ export const fineractConfig = {
 };
 
 /**
- * Format current date to "dd MMMM yyyy" format (e.g., "3 November 2025")
- */
-function getCurrentDateFormatted(): string {
-  const now = new Date();
-  const day = now.getDate();
-  const month = now.toLocaleString('en-US', { month: 'long' });
-  const year = now.getFullYear();
-  return `${day} ${month} ${year}`;
-}
-
-/**
  * Parse charges from environment variable
  * Expected format: JSON array string, e.g., '[{"chargeId":2,"amount":1000}]'
- * Note: dueDate will be automatically set to current date in "dd MMMM yyyy" format
  * Supports both quoted and unquoted JSON strings
  */
 function parseChargesFromEnv(): IChargeData[] {
   const chargesEnv = process.env.FINERACT_SAVINGS_ACCOUNT_CHARGES;
-  const currentDate = getCurrentDateFormatted();
 
   if (!chargesEnv) {
-    // Default charges if not provided
-    return [
-      {
-        chargeId: 1,
-        amount: 1000,
-        dueDate: currentDate,
-      },
-    ];
+    return [];
   }
 
   try {
@@ -58,11 +38,7 @@ function parseChargesFromEnv(): IChargeData[] {
     const cleanedEnv = chargesEnv.trim().replace(/^['"]|['"]$/g, '');
     const parsed = JSON.parse(cleanedEnv);
     if (Array.isArray(parsed)) {
-      // Set dueDate to current date for each charge
-      return (parsed as IChargeData[]).map(charge => ({
-        ...charge,
-        dueDate: currentDate,
-      }));
+      return parsed as IChargeData[];
     }
     throw new Error('FINERACT_SAVINGS_ACCOUNT_CHARGES must be a JSON array');
   } catch (error) {

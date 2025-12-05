@@ -2,7 +2,6 @@
 export interface IChargeData {
     chargeId: number;
     amount: number;
-    dueDate: string;
 }
 
 export interface ISavingsPayload {
