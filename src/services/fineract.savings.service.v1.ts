@@ -1,14 +1,10 @@
 import { injectable, inject } from 'tsyringe';
-import { IClientPayload } from '../schema/fineract.client.interface';
 import { logger } from '../utils/logger';
 import { ClientDatabaseServiceV1 } from '../database/fineract.client.database.service.v1';
 import { FineractApiClient, IThirdPartyClient } from '../integrations';
-import { FineractCreateClientRequest, FineractCreateClientResponse } from '../models/third-party/fineract.client.model';
-import { Client } from '../models/database-models';
 import { fineractConfig, fineractSavingsAccountConfig } from '../config/fineract.config';
-import { ISavingsPayload } from '../schema/fineract.savings.interface';
 import { SavingAccountPayload } from '../kafka';
-import { FineractCreateSavingsRequest, FineractCreateSavingsRequestBuilder, FineractCreateSavingsResponse } from '../models/third-party/fineract.savings.model';
+import { FineractCreateSavingsRequestBuilder, FineractCreateSavingsResponse } from '../models/third-party/fineract.savings.model';
 import { SavingsAccount } from '../models/database-models/savingsAccount';
 import { SavingsDatabaseServiceV1 } from '../database/fineract.savings.database.service.v1';
 import { formatToReadableDate } from '../utils/dateFormatter';
@@ -53,6 +49,14 @@ export class FineractSavingsService {
                 loanId: payload.loanId,
                 customerId: payload.customerId,
             });
+            const savingsAccountExists: SavingsAccount | null = await this.savingsAccountDbService.getSavingsAccountByExternalId(payload.loanId);
+            if (savingsAccountExists) {
+                logger.info('Savings account already exists', {
+                    loanId: payload.loanId,
+                    savingsAccountId: savingsAccountExists.savingsAccountId,
+                });
+                return;
+            }
 
             // get clientId by customerId from db
             const client = await this.clientDbService.getClientByExternalId(payload.customerId);
@@ -68,6 +72,7 @@ export class FineractSavingsService {
                 clientId: client.clientId,
                 loanId: payload.loanId,
             });
+
 
             //add hardcoded values for productId, dateFormat,locale from config
             const productId = parseInt(fineractSavingsAccountConfig.productId, 10);
