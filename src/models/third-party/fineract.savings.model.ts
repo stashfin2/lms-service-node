@@ -3,7 +3,6 @@ import { ISavingsPayload, ISavingsSuccessResponse, IChargeData } from "../../sch
 export class ChargeData {
     chargeId!: number;
     amount!: number;
-    dueDate!: string;
 
     constructor(data: IChargeData) {
         this.chargeId = data.chargeId;
@@ -157,6 +156,81 @@ export class FineractCreateSavingsResponse {
         this.activationStatus = response.activationStatus;
         this.step = response.step;
         this.message = response.message;
+    }
+}
+
+/**
+ * Request shape for Fineract savings deposit transaction
+ * (POST /savingsaccounts/{id}/transactions?command=deposit)
+ */
+export class FineractSavingsDepositRequest {
+    transactionDate!: string;
+    transactionAmount!: number;
+    dateFormat!: string;
+    locale!: string;
+    receiptNumber?: string;
+    note?: string;
+    paymentTypeId?: number;
+    accountNumber?: string;
+    checkNumber?: string;
+    routingCode?: string;
+
+    constructor(data: {
+        transactionDate: string;
+        transactionAmount: number;
+        dateFormat: string;
+        locale: string;
+        receiptNumber?: string;
+        note?: string;
+        paymentTypeId?: number;
+        accountNumber?: string;
+        checkNumber?: string;
+        routingCode?: string;
+    }) {
+        this.transactionDate = data.transactionDate;
+        this.transactionAmount = data.transactionAmount;
+        this.dateFormat = data.dateFormat;
+        this.locale = data.locale;
+        this.receiptNumber = data.receiptNumber;
+        this.note = data.note;
+        this.paymentTypeId = data.paymentTypeId;
+        this.accountNumber = data.accountNumber;
+        this.checkNumber = data.checkNumber;
+        this.routingCode = data.routingCode;
+    }
+}
+
+/**
+ * Response shape for Fineract savings deposit transaction
+ * (POST /savingsaccounts/{id}/transactions?command=deposit)
+ */
+export class FineractSavingsDepositResponse {
+    officeId?: number;
+    clientId?: number;
+    savingsId?: number;
+    resourceId?: number;
+    commandId?: number;
+    changes?: {
+        transactionDate?: string;
+        transactionAmount?: number;
+        receiptNumber?: string;
+        note?: string;
+        paymentTypeId?: number;
+        [key: string]: any;
+    };
+    transactionId?: number; // alias for resourceId when present
+    raw?: Record<string, any>;
+
+    constructor(response: any) {
+        this.officeId = response?.officeId;
+        this.clientId = response?.clientId;
+        this.savingsId = response?.savingsId;
+        this.resourceId = response?.resourceId;
+        this.commandId = response?.commandId;
+        this.changes = response?.changes;
+        this.transactionId = response?.resourceId ?? response?.savingsId;
+        // Keep raw for debugging/forward-compatibility
+        this.raw = response;
     }
 }
 

@@ -89,7 +89,7 @@ export class LmsControllerV1 {
       // Business logic - create SavingsAccount application
 
 
-      logger.info('Creating SavingAccount application', {customerId });
+      logger.info('Creating SavingAccount application', { customerId });
 
       // Publish event to Kafka
       const event = new SavingsAccountCreatedEvent(
@@ -257,7 +257,7 @@ export class LmsControllerV1 {
       const { firstName, lastName, email, phone, dateOfBirth, address, customerId } = req.body;
 
       logger.info('Initialized customer creation process:', { customerId, email });
-  
+
       // Core payload with type-safe construction
       const payload: IClientPayload = {
         officeId: FineractConstants.DEFAULT_OFFICE_ID,
@@ -276,7 +276,7 @@ export class LmsControllerV1 {
         dateFormat: FineractConstants.DATE_FORMAT,
         locale: FineractConstants.LOCALE,
       };
-  
+
       // Add address only if present and valid (type-safe)
       if (address && typeof address === "object" && Object.keys(address).length > 0) {
         payload.address = {
@@ -287,7 +287,7 @@ export class LmsControllerV1 {
           country: address.country,
         };
       }
-  
+
       // Create Kafka event
       const event = new CustomerCreatedEvent(
         payload,
@@ -332,33 +332,21 @@ export class LmsControllerV1 {
       const {
         loanId,
         amount,
-        paymentMethod,
-        principalAmount,
-        interestAmount,
-        lateFeeAmount,
-        outstandingBalance,
+        customerId,
+        paymentId
       } = req.body;
 
-      const paymentId = `PAY-${Date.now()}`;
-      const customerId = 'CUST-123'; // In real scenario, fetch from loan data
 
       logger.info('Recording payment', { paymentId, loanId });
 
       // Publish event to Kafka
       const event = new PaymentReceivedEvent(
         {
-          paymentId,
-          loanId,
-          customerId,
-          amount,
-          paymentMethod,
+          paymentId: Number(paymentId),
+          loanId: Number(loanId),
+          customerId: Number(customerId),
+          amount: Number(amount),
           paymentStatus: 'SUCCESS',
-          transactionReference: `TXN-${Date.now()}`,
-          paymentDate: new Date(),
-          principalAmount,
-          interestAmount,
-          lateFeeAmount,
-          outstandingBalance,
         },
         {
           correlationId: req.headers['x-correlation-id'] as string,
