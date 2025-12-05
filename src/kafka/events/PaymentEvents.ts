@@ -9,25 +9,17 @@ import { BaseEvent } from '../models/BaseEvent';
 // ==================== Payment Events ====================
 
 export interface PaymentPayload {
-  paymentId: string;
-  loanId: string;
-  customerId: string;
+  paymentId: string | number;
+  loanId: string | number;
+  customerId: string | number;
   amount: number;
-  paymentMethod: string;
   paymentStatus: string;
-  transactionReference?: string;
-  paymentDate: Date;
   metadata?: Record<string, any>;
 }
 
 export class PaymentReceivedEvent extends BaseEvent {
   constructor(
-    payload: PaymentPayload & {
-      principalAmount: number;
-      interestAmount: number;
-      lateFeeAmount?: number;
-      outstandingBalance: number;
-    },
+    payload: PaymentPayload,
     options?: {
       correlationId?: string;
       triggeredBy?: string;
@@ -41,7 +33,7 @@ export class PaymentReceivedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as PaymentPayload).customerId;
+    return String((this.payload as PaymentPayload).customerId);
   }
 }
 
@@ -65,7 +57,7 @@ export class PaymentFailedEvent extends BaseEvent {
   }
 
   public getPartitionKey(): string {
-    return (this.payload as PaymentPayload).customerId;
+    return String((this.payload as PaymentPayload).customerId);
   }
 }
 
